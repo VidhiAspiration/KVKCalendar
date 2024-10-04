@@ -132,7 +132,7 @@ final class MonthData: EventDateProtocol {
             return Date()
         }
     }
-    
+
     func reloadEventsInDays(events: [Event], date: Date) -> (events: [Event], dates: [Date?]) {
         let recurringEvents = events.filter { $0.recurringType != .none } 
         guard let idxSection = data.months.firstIndex(where: { $0.date.kvkMonth == date.kvkMonth && $0.date.kvkYear == date.kvkYear }) else {

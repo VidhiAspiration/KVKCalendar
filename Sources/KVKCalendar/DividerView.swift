@@ -80,7 +80,7 @@ extension DividerView: CalendarSettingProtocol {
         let xLine = timeLabel.bounds.width + style.timeline.offsetTimeX + style.timeline.offsetLineLeft
         lineView.frame = CGRect(x: xLine,
                                 y: timeLabel.center.y,
-                                width: bounds.width - xLine - style.timeline.offsetLineRight,
+                                width: bounds.width - xLine,
                                 height: style.timeline.heightLine)
         
         [timeLabel, lineView].forEach({ addSubview($0) })

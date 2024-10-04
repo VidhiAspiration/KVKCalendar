@@ -65,31 +65,25 @@ class DayCell: UICollectionViewCell {
             }
             
             dateLabel.text = "\(tempDay)"
-            
-            if !style.headerScroll.titleDays.isEmpty, let title = style.headerScroll.titleDays[safe: day.date?.kvkWeekday ?? 0] {
-                titleLabel.text = title
-            } else {
-                titleLabel.text = day.date?.titleForLocale(style.locale, formatter: style.headerScroll.weekdayFormatter).capitalized
-            }
-            
             guard day.type != .empty else {
+                titleLabel.text = day.date?.titleForLocale(style.locale, formatter: style.headerScroll.weekdayFormatter).capitalized
                 dateLabel.textColor = style.headerScroll.colorNameEmptyDay
                 titleLabel.textColor = style.headerScroll.colorNameEmptyDay
                 return
             }
             
+            if !style.headerScroll.titleDays.isEmpty, let title = style.headerScroll.titleDays[safe: day.date?.kvkWeekday ?? 0] {
+                titleLabel.text = title
+            } else {
+                titleLabel.text = day.date?.titleForLocale(style.locale, formatter: style.headerScroll.weekdayFormatter).uppercased()//V
+            }
             populateCell(day)
         }
     }
     
     var selectDate: Date = Date() {
         didSet {
-            guard day.type != .empty else {
-                titleLabel.textColor = style.headerScroll.colorNameEmptyDay
-                dotView.backgroundColor = .clear
-                isSelected = false
-                return
-            }
+            guard day.type != .empty else { return }
             
             let nowDate = Date()
             guard nowDate.kvkMonth != day.date?.kvkMonth else {
@@ -133,7 +127,7 @@ class DayCell: UICollectionViewCell {
     }
     
     private func populateCell(_ day: Day) {
-        guard day.type == .saturday || day.type == .sunday else {
+        guard /*day.type == .saturday ||*/ day.type == .sunday else {
             populateDay(date: day.date, colorText: style.headerScroll.colorDate)
             titleLabel.textColor = style.headerScroll.colorDate
             backgroundColor = style.headerScroll.colorWeekdayBackground
@@ -155,24 +149,6 @@ class DayCell: UICollectionViewCell {
             dotView.backgroundColor = .clear
         }
         isSelected = false
-    }
-}
-
-@available(iOS 13.4, *)
-extension DayCell: UIPointerInteractionDelegate {
-    func addPointInteraction() {
-        let interaction = UIPointerInteraction(delegate: self)
-        addInteraction(interaction)
-    }
-    
-    public func pointerInteraction(_ interaction: UIPointerInteraction, styleFor region: UIPointerRegion) -> UIPointerStyle? {
-        var pointerStyle: UIPointerStyle?
-        
-        if let interactionView = interaction.view {
-            let targetedPreview = UITargetedPreview(view: interactionView)
-            pointerStyle = UIPointerStyle(effect: .highlight(targetedPreview))
-        }
-        return pointerStyle
     }
 }
 

@@ -34,6 +34,7 @@ public final class TimelineView: UIView, EventDateProtocol, CalendarTimer {
             }
         }
     }
+    
     var eventPreview: UIView?
     var eventResizePreview: ResizeEventView?
     lazy var eventPreviewSize: CGSize = {
@@ -53,6 +54,11 @@ public final class TimelineView: UIView, EventDateProtocol, CalendarTimer {
     var calculatedCurrentLineViewFrame: CGRect {
         frame
     }
+    
+    public var scrollViewContentSize: CGSize {
+        return scrollView.contentSize
+    }
+
     
     private(set) var tagCurrentHourLine = -10
     private(set) var tagEventPagePreview = -20
@@ -101,8 +107,8 @@ public final class TimelineView: UIView, EventDateProtocol, CalendarTimer {
         return scroll
     }()
     
-    private(set) lazy var tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleDefaultTapGesture(gesture:)))
-
+    private(set) lazy var tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(forceDeselectEvent))
+    
     private(set) lazy var longTapGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(addNewEvent))
     
     init(parameters: Parameters, frame: CGRect) {
@@ -146,6 +152,7 @@ public final class TimelineView: UIView, EventDateProtocol, CalendarTimer {
             break
         }
     }
+
     
     private func movingCurrentLineHour() {
         guard !isValidTimer(timerKey) && isDisplayedCurrentTime else { return }
@@ -408,7 +415,7 @@ public final class TimelineView: UIView, EventDateProtocol, CalendarTimer {
                                                          startHour: startHour,
                                                          timeLabels: timeLabels,
                                                          calculatedTimeY: calculatedTimeY,
-                                                         calculatePointYByMinute: calculatePointYByMinute(_:time:),
+                                                        calculatePointYByMinute: calculatePointYByMinute(_:time:),
                                                          getTimelineLabel: getTimelineLabel(hour:))
                 let rects = eventLayout.getEventRects(forEvents: sortedEventsByDate,
                                                       date: date,
@@ -476,7 +483,6 @@ public final class TimelineView: UIView, EventDateProtocol, CalendarTimer {
                 offsetY = allDayView.frame.height
                 scrollView.addSubview(allDayView)
             }
-            
             setOffsetScrollView(offsetY: offsetY)
         } else {
             setOffsetScrollView(offsetY: 0, force: true)

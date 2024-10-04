@@ -30,7 +30,7 @@ public extension Date {
     }
     
     var isWeekend: Bool {
-        isSunday || isSaturday
+        isSunday /*|| isSaturday*/
     }
     
     var isWeekday: Bool {

@@ -96,7 +96,7 @@ final class WeekHeaderView: UIView {
                 label.text = title
             } else {
                 let weekdayFormatter = isFromYear ? style.year.weekdayFormatter : style.month.weekdayFormatter
-                label.text = value.titleForLocale(style.locale, formatter: weekdayFormatter).capitalized
+                label.text = value.titleForLocale(style.locale, formatter: weekdayFormatter).uppercased()//V
             }
             label.tag = value.kvkWeekday
             addSubview(label)

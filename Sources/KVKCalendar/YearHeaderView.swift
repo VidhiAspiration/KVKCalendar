@@ -23,7 +23,7 @@ final class YearHeaderView: UICollectionReusableView {
             
             titleLabel.text = date.titleForLocale(style.locale, formatter: style.year.titleFormatter)
             if Date().kvkYear == date.kvkYear {
-                titleLabel.textColor = .systemRed
+                titleLabel.textColor = style.year.colorBackgroundCurrentDate
             } else {
                 titleLabel.textColor = style.year.colorTitleHeader
             }

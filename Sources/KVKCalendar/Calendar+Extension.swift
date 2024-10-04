@@ -25,20 +25,49 @@ enum Platform: Int {
         }
     }
     
+//    static var currentInterface: Platform {
+//        switch currentDevice {
+//        case .pad:
+//            if let vc = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+//                if vc.view.bounds.width < 600 {
+//                    return .phone
+//                } else {
+//                    return .pad
+//                }
+//            } else {
+//                return .pad
+//            }
+//        default:
+//            return currentDevice
+//        }
+//    }
+    
     static var currentInterface: Platform {
         switch currentDevice {
         case .pad:
-            if let vc = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController {
-                if vc.view.bounds.width < 600 {
-                    return .phone
-                } else {
-                    return .pad
-                }
+            if Thread.isMainThread {
+                return checkInterfaceTypeForPad()
             } else {
-                return .pad
+                var platform: Platform = .pad
+                DispatchQueue.main.sync {
+                    platform = checkInterfaceTypeForPad()
+                }
+                return platform
             }
         default:
             return currentDevice
+        }
+    }
+
+    private static func checkInterfaceTypeForPad() -> Platform {
+        if let vc = UIApplication.shared.windows.first(where: { $0.isKeyWindow })?.rootViewController {
+            if vc.view.bounds.width < 600 {
+                return .phone
+            } else {
+                return .pad
+            }
+        } else {
+            return .pad
         }
     }
         
@@ -388,5 +417,25 @@ public extension KVKDequeueProxyProtocol where Self: UICollectionView {
 
 extension UITableView: KVKDequeueProxyProtocol {}
 extension UICollectionView: KVKDequeueProxyProtocol {}
+
+@available(iOS 13.4, *)
+extension UIView: UIPointerInteractionDelegate {
+    
+    func addPointInteraction() {
+        let interaction = UIPointerInteraction(delegate: self)
+        addInteraction(interaction)
+    }
+    
+    public func pointerInteraction(_ interaction: UIPointerInteraction, styleFor region: UIPointerRegion) -> UIPointerStyle? {
+        var pointerStyle: UIPointerStyle?
+        
+        if let interactionView = interaction.view {
+            let targetedPreview = UITargetedPreview(view: interactionView)
+            pointerStyle = UIPointerStyle(effect: .highlight(targetedPreview))
+        }
+        return pointerStyle
+    }
+    
+}
 
 #endif

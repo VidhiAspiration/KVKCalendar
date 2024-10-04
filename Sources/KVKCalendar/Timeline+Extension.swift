@@ -259,20 +259,7 @@ extension TimelineView {
         }
     }
     
-    @objc func handleDefaultTapGesture(gesture: UITapGestureRecognizer) {
-        // Record before unchecking
-        let hasCreateEvent = events.contains { $0.isNew }
-
-        if style.timeline.isEnabledForceDeselectEvent {
-            forceDeselectEvent()
-        }
-
-        if style.timeline.isEnabledCreateNewEvent && style.timeline.createNewEventMethod == .tap && !hasCreateEvent {
-            addNewEvent(gesture: gesture)
-        }
-    }
-
-    func forceDeselectEvent() {
+    @objc func forceDeselectEvent() {
         removeEventResizeView()
         
         guard let eventViewGeneral = scrollView.subviews.first(where: { ($0 as? EventViewGeneral)?.isSelected == true }) as? EventViewGeneral else { return }
@@ -368,7 +355,7 @@ extension TimelineView {
             let idx = item.offset
             let lineFrame = CGRect(x: leftOffsetWithAdditionalTime,
                                    y: time.center.y,
-                                   width: frame.width - leftOffsetWithAdditionalTime - style.timeline.offsetLineRight,
+                                   width: frame.width - leftOffsetWithAdditionalTime,
                                    height: style.timeline.heightLine)
             let line = UIView(frame: lineFrame)
             line.backgroundColor = style.timeline.separatorLineColor
@@ -421,7 +408,7 @@ extension TimelineView {
         }
     }
     
-    @objc func addNewEvent(gesture: UIGestureRecognizer) {
+    @objc func addNewEvent(gesture: UILongPressGestureRecognizer) {
         var point = gesture.location(in: scrollView)
         if style.timeline.createEventAtTouch && !style.event.states.contains(.move) {
             let offset = eventPreviewYOffset - style.timeline.offsetEvent - 6
@@ -444,15 +431,7 @@ extension TimelineView {
         
         newEvent.end = style.calendar.date(byAdding: .minute, value: style.event.newEventStep, to: newEvent.start) ?? Date()
 
-        guard  !isResizableEventEnable else { return }
-
-        if let delegate {
-            if let tmpNewEvent = delegate.willAddNewEvent(newEvent, minute: time.minute, hour: time.hour, point: point) {
-                newEvent = tmpNewEvent
-            } else {
-                return
-            }
-        }
+        guard !isResizableEventEnable && (delegate?.willAddNewEvent(newEvent, minute: time.minute, hour: time.hour, point: point) ?? true) else { return }
         
         if gesture.state == .began {
             eventPreviewSize = getEventPreviewSize()
@@ -589,7 +568,7 @@ extension TimelineView: EventDelegate {
         delegate?.didSelectEvent(event, frame: gesture.view?.frame)
     }
     
-    func didStartResizeEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {
+    func didStartResizeEvent(_ event: Event, gesture: UILongPressGestureRecognizer, view: UIView) {
         forceDeselectEvent()
         isResizableEventEnable = true
         
@@ -620,14 +599,15 @@ extension TimelineView: EventDelegate {
             scrollView.addSubview(resizeView)
         }
         enableAllEvents(enable: false)
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred() //V
+        print("Call")
     }
     
-    func didEndResizeEvent(_ event: Event, gesture: UIGestureRecognizer) {
+    func didEndResizeEvent(_ event: Event, gesture: UILongPressGestureRecognizer) {
         removeEventResizeView()
     }
     
-    func didStartMovingEvent(_ event: Event, gesture: UIGestureRecognizer, view: UIView) {
+    func didStartMovingEvent(_ event: Event, gesture: UILongPressGestureRecognizer, view: UIView) {
         removeEventResizeView()
         let location = gesture.location(in: scrollView)
         
@@ -672,7 +652,7 @@ extension TimelineView: EventDelegate {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
     
-    func didEndMovingEvent(_ event: Event, gesture: UIGestureRecognizer) {
+    func didEndMovingEvent(_ event: Event, gesture: UILongPressGestureRecognizer) {
         eventPreview?.removeFromSuperview()
         eventPreview = nil
         movingMinuteLabel.removeFromSuperview()
@@ -705,7 +685,7 @@ extension TimelineView: EventDelegate {
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
     
-    func didChangeMovingEvent(_ event: Event, gesture: UIGestureRecognizer) {
+    func didChangeMovingEvent(_ event: Event, gesture: UILongPressGestureRecognizer) {
         let location = gesture.location(in: scrollView)
         guard scrollView.frame.width >= (location.x + 20) &&
                 (location.x - 20) >= style.timeline.allLeftOffset else { return }
@@ -773,8 +753,7 @@ extension TimelineView: EventDelegate {
         guard let line = lines.first(where: { $0.lineFrame.origin.x...($0.lineFrame.origin.x + width) ~= pointX }) else { return nil }
         
         return (CGRect(origin: line.lineFrame.origin,
-                       size: CGSize(width: width, height: scrollView.contentSize.height)),
-                line.date)
+                       size: CGSize(width: width, height: scrollView.contentSize.height)),line.date)
     }
 }
 
@@ -796,7 +775,7 @@ extension TimelineView: CalendarSettingProtocol {
         scrollView.isScrollEnabled = style.timeline.scrollDirections.contains(.vertical)
         
         tapGestureRecognizer.isEnabled = style.timeline.isEnabledDefaultTapGestureRecognizer
-        longTapGestureRecognizer.isEnabled = style.timeline.isEnabledCreateNewEvent && style.timeline.createNewEventMethod == .longTap
+        longTapGestureRecognizer.isEnabled = style.timeline.isEnabledCreateNewEvent
         longTapGestureRecognizer.minimumPressDuration = style.timeline.minimumPressDuration
     }
     

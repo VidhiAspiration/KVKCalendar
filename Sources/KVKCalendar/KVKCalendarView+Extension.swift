@@ -165,9 +165,9 @@ extension KVKCalendarView {
                   let endDate = self.style.calendar.date(byAdding: .year,
                                                          value: endOffset,
                                                          to: self.calendarData.date) else {
-                        completion([])
-                      return
-                  }
+                completion([])
+                return
+            }
             
             let predicate = store.predicateForEvents(withStart: startDate,
                                                      end: endDate,
@@ -296,7 +296,6 @@ extension KVKCalendarView: DisplayDataSource {
     public func willDisplaySectionsInListView(_ sections: [ListViewData.SectionListView]) {
         dataSource?.willDisplaySectionsInListView(sections)
     }
-    
 }
 
 extension KVKCalendarView: DisplayDelegate {
@@ -330,9 +329,8 @@ extension KVKCalendarView: DisplayDelegate {
         delegate?.didSelectMore(date, frame: frame)
     }
     
-    public func willAddNewEvent(_ event: Event, _ date: Date?) -> Event? {
-        guard let delegate else { return event }
-        return delegate.willAddNewEvent(event, date)
+    public func willAddNewEvent(_ event: Event, _ date: Date?) -> Bool {
+        delegate?.willAddNewEvent(event, date) ?? true
     }
 
     public func didAddNewEvent(_ event: Event, _ date: Date?) {
@@ -427,7 +425,6 @@ extension KVKCalendarView {
             }
         }
     }
-
 }
 
 #endif

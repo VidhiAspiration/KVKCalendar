@@ -16,7 +16,7 @@ final class MonthCell: KVKCollectionViewCell {
         return CGRect(x: 0, y: customY, width: frame.width, height: frame.height - customY)
     }
     
-    private let titlesCount = 3
+    private let titlesCount = 1/*3*/ //V
     private let countInCell: CGFloat = 4
     private let offset: CGFloat = 3
     private let defaultTagView = -1
@@ -71,7 +71,7 @@ final class MonthCell: KVKCollectionViewCell {
     }
     
     weak var delegate: MonthCellDelegate?
-        
+    
     var events: [Event] = [] {
         didSet {
             contentView.subviews.filter { $0.tag != defaultTagView }.forEach { $0.removeFromSuperview() }
@@ -202,20 +202,41 @@ final class MonthCell: KVKCollectionViewCell {
                     dateLabel.text = nil
                 }
             }
-
+            
             if !monthStyle.isHiddenSeparator {
                 switch Platform.currentInterface {
                 case .phone:
                     let topLineLayer = CALayer()
-                    topLineLayer.name = "line_layer"
-                    
+                    topLineLayer.name = "top_line_layer"
+                  
+                    // Add vertical line
+                    let leftLineLayer = CALayer()
+                    leftLineLayer.name = "left_line_layer"
+                   
                     if monthStyle.isHiddenSeparatorOnEmptyDate && day.type == .empty {
-                        layer.sublayers?.removeAll(where: { $0.name == "line_layer" })
+                        layer.sublayers?.removeAll { $0.name == "top_line_layer" || $0.name == "left_line_layer" }
+                        
                     } else {
                         topLineLayer.frame = CGRect(x: 0, y: 0, width: frame.width, height: monthStyle.widthSeparator)
                         topLineLayer.backgroundColor = monthStyle.colorSeparator.cgColor
+                        topLineLayer.opacity = monthStyle.colorSeparatorOpacity
                         layer.addSublayer(topLineLayer)
+                        
+                        leftLineLayer.frame = CGRect(x: 0, y: 0, width: monthStyle.widthSeparator, height: frame.height)
+                        leftLineLayer.backgroundColor = monthStyle.colorSeparator.cgColor
+                        leftLineLayer.opacity = monthStyle.colorSeparatorOpacity
+                        layer.addSublayer(leftLineLayer)
                     }
+                    //                    let topLineLayer = CALayer()
+                    //                    topLineLayer.name = "line_layer"
+                    //
+                    //                    if monthStyle.isHiddenSeparatorOnEmptyDate && day.type == .empty {
+                    //                        layer.sublayers?.removeAll(where: { $0.name == "line_layer" })
+                    //                    } else {
+                    //                        topLineLayer.frame = CGRect(x: 0, y: 0, width: frame.width, height: monthStyle.widthSeparator)
+                    //                        topLineLayer.backgroundColor = monthStyle.colorSeparator.cgColor
+                    //                        layer.addSublayer(topLineLayer)
+                    //                    }
                 default:
                     if day.type != .empty {
                         layer.borderWidth = monthStyle.isHiddenSeparatorOnEmptyDate ? 0 : monthStyle.widthSeparator
@@ -268,6 +289,10 @@ final class MonthCell: KVKCollectionViewCell {
         dateLabel.frame = dateFrame
         dateLabel.tag = defaultTagView
         contentView.addSubview(dateLabel)
+        
+        if #available(iOS 13.4, *) {
+            contentView.addPointInteraction()
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -330,7 +355,7 @@ final class MonthCell: KVKCollectionViewCell {
     
     private func populateCell(day: Day, label: UILabel, view: UIView) {
         let date = day.date
-        let weekend = day.type == .saturday || day.type == .sunday || (date?.isWeekend == true)
+        let weekend = /*day.type == .saturday ||*/ day.type == .sunday || (date?.isWeekend == true)
         
         let nowDate = Date()
         label.backgroundColor = .clear
@@ -345,7 +370,7 @@ final class MonthCell: KVKCollectionViewCell {
             case .phone where day.type == .empty:
                 view.backgroundColor = UIColor.clear
             default:
-                view.backgroundColor = monthStyle.colorBackgroundWeekendDate
+                view.backgroundColor = /*monthStyle.colorBackgroundWeekendDate*/UIColor.clear
             }
             
             label.textColor = textColorForEmptyDay ?? monthStyle.colorWeekendDate
@@ -422,7 +447,7 @@ final class MonthCell: KVKCollectionViewCell {
             if monthStyle.isHiddenEventTitle {
                 text = ""
             } else {
-                text = event.title.month ?? ""
+                text = event.title.timeline
             }
             
             let formattedString: String

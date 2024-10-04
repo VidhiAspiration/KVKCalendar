@@ -130,7 +130,7 @@ extension DayView: TimelineDelegate {
         delegate?.didChangeEvent(event, start: startDate, end: endDate)
     }
     
-    func willAddNewEvent(_ event: Event, minute: Int, hour: Int, point: CGPoint) -> Event? {
+    func willAddNewEvent(_ event: Event, minute: Int, hour: Int, point: CGPoint) -> Bool {
         var components = DateComponents()
         components.year = parameters.data.date.kvkYear
         components.month = parameters.data.date.kvkMonth
@@ -138,9 +138,7 @@ extension DayView: TimelineDelegate {
         components.hour = hour
         components.minute = minute
         let date = style.calendar.date(from: components)
-
-        guard let delegate else { return event }
-        return delegate.willAddNewEvent(event, date)
+        return delegate?.willAddNewEvent(event, date) ?? true
     }
     
     func didAddNewEvent(_ event: Event, minute: Int, hour: Int, point: CGPoint) {
@@ -204,8 +202,6 @@ extension DayView: CalendarSettingProtocol {
         } else {
             timelineFrame.size.height = frame.height
         }
-        
-        timelineFrame.size.height -= style.timeline.offsetTop
         
         if isAvailableEventViewer {
             if let defaultWidth = style.timeline.widthEventViewer {
@@ -332,8 +328,6 @@ extension DayView: CalendarSettingProtocol {
             timelineFrame.size.height -= scrollableWeekView.frame.height
         }
         
-        timelineFrame.origin.y += style.timeline.offsetTop
-        
         if isAvailableEventViewer {
             if UIApplication.shared.orientation.isPortrait {
                 timelineFrame.size.width = UIScreen.main.bounds.width * 0.5
@@ -352,6 +346,7 @@ extension DayView: CalendarSettingProtocol {
     }
     
     private func setupScrollableWeekView() -> ScrollableWeekView {
+
         let heightView: CGFloat
         if style.headerScroll.isHiddenSubview {
             heightView = style.headerScroll.heightHeaderWeek

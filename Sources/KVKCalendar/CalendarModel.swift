@@ -103,7 +103,6 @@ extension CalendarType: Identifiable {
     public var id: CalendarType {
         self
     }
-    
 }
 
 // MARK: Event model
@@ -173,22 +172,63 @@ public struct Event {
     }
     
     public init(event: EKEvent, monthTitle: String? = nil, listTitle: String? = nil) {
-        ID = event.eventIdentifier
-        title = TextEvent(timeline: event.title,
-                          month: monthTitle ?? event.title,
-                          list: listTitle ?? event.title)
-        start = event.startDate
-        end = event.endDate
-        color = Event.Color(UIColor(cgColor: event.calendar.cgColor))
-        isAllDay = event.isAllDay
-        systemEvent = event
-        
-        if let tempColor = color {
-            let value = prepareColor(tempColor)
-            backgroundColor = value.background
-            textColor = value.text
+        guard let eventIdentifier = event.eventIdentifier else {
+            print("Error: EKEvent's eventIdentifier is nil")
+            // Handle the error appropriately, perhaps by returning early or setting a default value
+            self.ID = "unknown"
+            self.title = TextEvent(timeline: "No Title", month: "No Title", list: "No Title")
+            self.start = Date()
+            self.end = Date()
+            self.color = nil
+            self.backgroundColor = UIColor.white
+            self.textColor = UIColor.black
+            self.systemEvent = event
+            return
         }
+        
+        self.ID = eventIdentifier
+        let title = event.title ?? "No Title"
+        self.title = TextEvent(
+            timeline: title,
+            month: monthTitle ?? title,
+            list: listTitle ?? title
+        )
+        
+        self.start = event.startDate ?? Date()
+        self.end = event.endDate ?? self.start
+        
+        if let calendarColor = event.calendar?.cgColor {
+            self.color = Event.Color(UIColor(cgColor: calendarColor))
+            let value = prepareColor(self.color!)
+            self.backgroundColor = value.background
+            self.textColor = value.text
+        } else {
+            self.color = nil
+            self.backgroundColor = UIColor.white
+            self.textColor = UIColor.black
+        }
+        
+        self.systemEvent = event
     }
+
+    
+//    public init(event: EKEvent, monthTitle: String? = nil, listTitle: String? = nil) {
+//        ID = event.eventIdentifier
+//        title = TextEvent(timeline: event.title,
+//                          month: monthTitle ?? event.title,
+//                          list: listTitle ?? event.title)
+//        start = event.startDate
+//        end = event.endDate
+//        color = Event.Color(UIColor(cgColor: event.calendar.cgColor))
+//        isAllDay = event.isAllDay
+//        systemEvent = event
+//        
+//        if let tempColor = color {
+//            let value = prepareColor(tempColor)
+//            backgroundColor = value.background
+//            textColor = value.text
+//        }
+//    }
     
     func prepareColor(_ color: Event.Color, brightnessOffset: CGFloat = 0.4) -> (background: UIColor, text: UIColor) {
         let bgColor = color.value.withAlphaComponent(color.alpha)
@@ -253,7 +293,7 @@ public extension Event {
         public let value: UIColor
         public let alpha: CGFloat
         
-        public init(_ color: UIColor, alpha: CGFloat = 0.3) {
+        public init(_ color: UIColor, alpha: CGFloat = 0.2) {
             self.value = color
             self.alpha = alpha
         }
@@ -542,16 +582,8 @@ public protocol CalendarDelegate: AnyObject {
     /// drag & drop events and resize
     func didChangeEvent(_ event: Event, start: Date?, end: Date?)
     
-    /** The method is **DEPRECATED**
-        Use a new **willAddNewEvent(_: _:)** that returns `Event?`
-     */
-    @available(*, deprecated, message: "Use the `willAddNewEvent(_: _:)` method that returns `Event?` instead.")
-    func willAddNewEvent(_ event: Event, _ date: Date?) -> Bool
-
     /// Controls whether event can be added
-    ///
-    /// Returns the modified Event object. `nil` means the event will not be added.
-    func willAddNewEvent(_ event: Event, _ date: Date?) -> Event?
+    func willAddNewEvent(_ event: Event, _ date: Date?) -> Bool
 
     /// add new event
     func didAddNewEvent(_ event: Event, _ date: Date?)
@@ -596,10 +628,6 @@ public extension CalendarDelegate {
     
     func willAddNewEvent(_ event: Event, _ date: Date?) -> Bool { true }
     
-    func willAddNewEvent(_ event: Event, _ date: Date?) -> Event? {
-        return willAddNewEvent(event, date) ? event : nil
-    }
-
     func didAddNewEvent(_ event: Event, _ date: Date?) {}
     
     func didDisplayEvents(_ events: [Event], dates: [Date?]) {}

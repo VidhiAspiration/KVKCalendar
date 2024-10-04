@@ -22,7 +22,7 @@ final class YearCell: UICollectionViewCell {
     private var topHeight: CGFloat {
         switch Platform.currentInterface {
         case .phone:
-            return 15
+            return 30
         default:
             return 30
         }
@@ -62,7 +62,7 @@ final class YearCell: UICollectionViewCell {
                 return
             }
             
-            titleLabel.textColor = .systemRed
+            titleLabel.textColor = style.year.colorBackgroundCurrentDate
         }
     }
     
@@ -144,7 +144,7 @@ final class YearCell: UICollectionViewCell {
     }
     
     private func weekendsDays(day: Day, label: UILabel, view: UIView) {
-        guard day.type == .saturday || day.type == .sunday else {
+        guard /*day.type == .saturday ||*/ day.type == .sunday else {
             isNowDate(date: day.date, weekend: false, label: label, view: view)
             return
         }
@@ -199,24 +199,6 @@ final class YearCell: UICollectionViewCell {
         label.backgroundColor = style.year.colorBackgroundCurrentDate
         label.layer.cornerRadius = label.frame.height / 2
         label.clipsToBounds = true
-    }
-}
-
-@available(iOS 13.4, *)
-extension YearCell: UIPointerInteractionDelegate {
-    func addPointInteraction() {
-        let interaction = UIPointerInteraction(delegate: self)
-        addInteraction(interaction)
-    }
-    
-    public func pointerInteraction(_ interaction: UIPointerInteraction, styleFor region: UIPointerRegion) -> UIPointerStyle? {
-        var pointerStyle: UIPointerStyle?
-        
-        if let interactionView = interaction.view {
-            let targetedPreview = UITargetedPreview(view: interactionView)
-            pointerStyle = UIPointerStyle(effect: .highlight(targetedPreview))
-        }
-        return pointerStyle
     }
 }
 

@@ -9,7 +9,7 @@
 
 import UIKit
 
-private let gainsboro: UIColor = UIColor(red: 220 / 255, green: 220 / 255, blue: 220 / 255, alpha: 1)
+public let gainsboro: UIColor = UIColor(red: 220 / 255, green: 220 / 255, blue: 220 / 255, alpha: 1)
 
 public struct Style {
     public var event = EventStyle()
@@ -42,7 +42,6 @@ public struct Style {
         if Platform.currentInterface == .phone {
             timeline.offsetTimeX = 2
             timeline.offsetLineLeft = 2
-            timeline.offsetLineRight = 0
             headerScroll.titleDateAlignment = .center
             headerScroll.isAnimateTitleDate = true
             headerScroll.heightHeaderWeek = 70
@@ -56,7 +55,7 @@ public struct Style {
             month.isHiddenTitleHeader = true
             week.colorBackground = .white
         } else {
-            timeline.widthEventViewer = 350
+//            timeline.widthEventViewer = 450
             headerScroll.fontNameDay = .systemFont(ofSize: 17)
         }
         
@@ -77,7 +76,7 @@ public struct HeaderScrollStyle {
             }
         }
     }
-    private var heightSubviewHeaderCached: CGFloat = 30
+    public var heightSubviewHeaderCached: CGFloat = 30
     public var colorBackground: UIColor = gainsboro.withAlphaComponent(0.4)
     public var isHiddenSubview: Bool = false {
         didSet {
@@ -118,7 +117,7 @@ public struct HeaderScrollStyle {
     public var isHidden: Bool = false
     public var dotCorners: UIRectCorner = .allCorners
     public var dotCornersRadius: CGSize?
-    public var titleDateAlignment: NSTextAlignment = .left
+    public var titleDateAlignment: NSTextAlignment = .center
     public var titleDateFont: UIFont = .boldSystemFont(ofSize: 20)
     public var isAnimateTitleDate: Bool = false
     public var colorNameEmptyDay: UIColor = gainsboro
@@ -159,7 +158,6 @@ public struct TimelineStyle {
         return 0.5
 #endif
     }()
-    public var offsetTop: CGFloat = 0
     public var offsetLineLeft: CGFloat = 10
     public var offsetLineRight: CGFloat = 10
     public var backgroundColor: UIColor = .white
@@ -187,9 +185,7 @@ public struct TimelineStyle {
     public var minimumPressDuration: TimeInterval = 0.5
     public var isHiddenStubEvent: Bool = true
     public var isEnabledCreateNewEvent: Bool = true
-    public var isEnabledForceDeselectEvent: Bool = true
     public var isEnabledDefaultTapGestureRecognizer: Bool = true
-    public var createNewEventMethod: CreateNewEventMethod = .longTap
     public var maxLimitCachedPages: UInt = 10
     public var scrollDirections: Set<ScrollDirectionType> = Set(ScrollDirectionType.allCases)
     public var dividerType: DividerType? = nil
@@ -277,10 +273,6 @@ public struct TimelineStyle {
             }
         }
     }
-
-    public enum CreateNewEventMethod: Equatable {
-        case tap, longTap
-    }
 }
 
 // MARK: Week style
@@ -348,7 +340,8 @@ public struct MonthStyle {
     public var isHiddenSeparator: Bool = false
     public var isHiddenSeparatorOnEmptyDate: Bool = false
     public var widthSeparator: CGFloat = 0.3
-    public var colorSeparator: UIColor = gainsboro.withAlphaComponent(0.9)
+    public var colorSeparator: UIColor = gainsboro
+    public var colorSeparatorOpacity: Float = 0.0
     public var colorBackgroundWeekendDate: UIColor = gainsboro.withAlphaComponent(0.2)
     public var colorBackgroundDate: UIColor = .white
     public var scrollDirection: UICollectionView.ScrollDirection = .vertical
@@ -505,7 +498,7 @@ public struct ListViewStyle {
 }
 
 extension Style {
-    var adaptiveStyle: Style {
+    public var adaptiveStyle: Style {
         guard followInSystemTheme else { return self }
         
         var newStyle = self
@@ -571,6 +564,7 @@ extension Style {
             newStyle.month.colorSeparator = UIColor.useForStyle(dark: .systemGray4, white: newStyle.month.colorSeparator)
             newStyle.month.colorBackgroundWeekendDate = UIColor.useForStyle(dark: .black,
                                                                             white: newStyle.month.colorBackgroundWeekendDate)
+            
         } else {
             newStyle.month.colorSeparator = UIColor.useForStyle(dark: .systemGray, white: newStyle.month.colorSeparator)
             newStyle.month.colorBackgroundWeekendDate = UIColor.useForStyle(dark: .systemGray6,
@@ -710,6 +704,7 @@ extension MonthStyle: Equatable {
         && compare(\.isHiddenSeparatorOnEmptyDate)
         && compare(\.widthSeparator)
         && compare(\.colorSeparator)
+        && compare(\.colorSeparatorOpacity)
         && compare(\.colorBackgroundWeekendDate)
         && compare(\.colorBackgroundDate)
         && compare(\.scrollDirection)
@@ -867,7 +862,6 @@ extension TimelineStyle: Equatable {
         && compare(\.movingMinuteLabelRoundUpTime)
         && compare(\.minuteLabelRoundUpTime)
         && compare(\.widthLine)
-        && compare(\.offsetTop)
         && compare(\.offsetLineLeft)
         && compare(\.offsetLineRight)
         && compare(\.backgroundColor)
@@ -903,8 +897,6 @@ extension TimelineStyle: Equatable {
         && compare(\.timeDividerFont)
         && compare(\.scale)
         && compare(\.createEventAtTouch)
-        && compare(\.createNewEventMethod)
-        && compare(\.isEnabledForceDeselectEvent)
     }
     
 }
