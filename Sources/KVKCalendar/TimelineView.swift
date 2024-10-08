@@ -146,8 +146,11 @@ public final class TimelineView: UIView, EventDateProtocol, CalendarTimer {
         switch paramaters.type {
         case .day:
             scrollView.contentInset = UIEdgeInsets(top: offsetY, left: 0, bottom: 0, right: 0)
+            scrollView.contentOffset.y = -offsetY
+        
         case .week where scrollView.contentInset.top < offsetY || force:
             scrollView.contentInset = UIEdgeInsets(top: offsetY, left: 0, bottom: 0, right: 0)
+            scrollView.contentOffset.y = -offsetY
         default:
             break
         }
